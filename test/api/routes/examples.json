@@ -1,0 +1,30 @@
+{
+    "result":[
+        {
+            "name":"KFC",
+            "receipt_num":"12345667",
+            "order_num":"1004",
+            "time":"2020-07-07T09:10:47",
+            "status":"false"
+        },
+        {
+            "name":"McDonalds",
+            "receipt_num":"",
+            "order_num":"1647",
+            "time":"2020-07-05T21:10:47",
+            "status":"false"
+        },{
+            "name":"GoodLuckRestaurant",
+            "receipt_num":"986746223",
+            "order_num":"",
+            "time":"2020-07-05T21:10:47",
+            "status":"false"
+        },{
+            "name":"KFC",
+            "receipt_num":"9876543",
+            "order_num":"2008",
+            "time":"2020-03-07T19:10:47",
+            "status":"true"
+        }
+    ]
+}
