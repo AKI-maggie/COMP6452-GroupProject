@@ -63,4 +63,6 @@ contract UserITFTest is UserITF {
     //     Assert.equal(newReview('invalidReceipt', 'testRes', "I didn't go there"), 0, 'Review with an invalid receipt proof is not available');
     // }
     
+    function 
+    
 }
