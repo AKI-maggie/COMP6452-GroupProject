@@ -112,7 +112,7 @@ contract UserITF is usingProvable{
     // return true if review successfully recorded
     // else return false
     function newReview(string memory receiptNo, string memory rest_name, string memory review) 
-        public accountExists notEmpty(receiptNo) notEmpty(review) notEmpty(rest_name) returns (int credit) {
+        public accountExists notEmpty(receiptNo) notEmpty(review) notEmpty(rest_name) payable returns (int credit) {
         address author = msg.sender;
 
         // check receipt validity
