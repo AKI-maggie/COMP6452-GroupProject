@@ -1,8 +1,10 @@
-pragma solidity ^0.6.0;
+pragma solidity >=0.4.22 <0.7.0;
 pragma experimental ABIEncoderV2;
 
+import 'getTemplate.sol';
+
 // This file contains the interface class which contains management functions for normal users
-contract UserITF {
+contract UserITF is usingProvable{
     /**
     * Structures
     **/
@@ -39,7 +41,10 @@ contract UserITF {
         address owner;
         uint couponType;
     }
-    
+
+    /**
+    * Global variables
+    * */    
     mapping (address => User) public users;
 
     Review[] public reviews;
@@ -48,6 +53,13 @@ contract UserITF {
     Coupon[] public coupons;
     
     uint review_count = 0;
+
+    GetStatus authenticator;
+    event LogConstructorInitiated(string nextStep);
+    event LogPriceUpdated(string price);
+    event LogNewProvableQuery(string description);
+    string public ETHUSD;
+    mapping(bytes32=>bool) validIds;
     
     /**
     * Modifiers
@@ -70,6 +82,20 @@ contract UserITF {
     /**
     * Functions
     **/
+    // Constructor
+    function UserITF(address _m) payable {
+        LogConstructorInitiated("Constructor was initiated. Call 'updatePrice()' to send the Provable Query.");
+        authenticator = GetStatus(_m);
+    }
+
+    function () payable {
+        // Call the handlePayment function in the main contract
+        // and forward all funds (msg.value) sent to this contract
+        // and passing in the following data: msg.sender
+        authenticator.handlePayment.value(msg.value)(msg.sender);
+    
+    }
+
     // Account Management funcions
     function register(string memory username) public accountNotExists notEmpty(username) returns (bool) {
         User memory u;
@@ -113,8 +139,8 @@ contract UserITF {
     
     // return reviews with credit sorting
     function searchReview(string memory rest_name) public returns (Review[] memory reviews){
-        Review[] memory reviews = backendSearchReview(rest_name);
-        return reviews;
+        Review[] memory review_results = backendSearchReview(rest_name);
+        return review_results;
     }
 
     function newComment(uint reviewNo, string memory comment, string memory receiptNo, bool positive) 
@@ -131,7 +157,8 @@ contract UserITF {
             comments.push(c);
             
             // get new writer and commentor credits
-            (int authorCredit, int commentorCredit) = calculateForNewComment(positive, msg.sender, reviews[reviewNo].author);
+            
+            var (authorCredit, commentorCredit) = calculateForNewComment(positive, msg.sender, reviews[reviewNo].author);
             
             // update to the database
             users[reviews[reviewNo].author].unusedCredits += authorCredit;
@@ -164,9 +191,32 @@ contract UserITF {
     }
 
     // Authenticator functions (connected with Oracle)
-    function authenticate(string memory receiptNo, string memory rest_name) private returns (bool){
-        return true;
+    function __callback(bytes32 myid, string result) {
+        if (!validIds[myid]) revert();
+        if (msg.sender != provable_cbAddress()) revert();
+        ETHUSD = result;
+        LogPriceUpdated(result);
+        delete validIds[myid];
     }
+    function authenticate(string receipt_N, string restaurant) payable returns (bool){
+      authenticator.getStatus(restaurant, receipt_N);
+      bool status = authenticator.status();
+      if (status == false){
+        if (provable_getPrice("URL") > this.balance) {
+           LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee");
+           return false;
+        } else {
+           LogNewProvableQuery("Provable query was sent, standing by for the answer..");
+           bytes32 queryId = provable_query("URL", "json(https://guarded-sands-73970.herokuapp.com/records)",
+  '{"receipt_num":receipt_N}');
+           validIds  [queryId] = true;
+           return true;
+       }
+      }
+      else{
+          return false;
+      }
+  }
     
     /**
     * Functions (off-chain simulator)
