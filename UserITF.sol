@@ -1,8 +1,10 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.4.22;
 pragma experimental ABIEncoderV2;
 
+import "OracleAuthenticator.sol"
+
 // This file contains the interface class which contains management functions for normal users
-contract UserITF {
+contract UserITF is usingProvable{
     /**
     * Structures
     **/
@@ -39,7 +41,12 @@ contract UserITF {
         address owner;
         uint couponType;
     }
+
+    /**
+    * Variables
+    **/
     
+    // userITF components
     mapping (address => User) public users;
 
     Review[] public reviews;
@@ -48,7 +55,14 @@ contract UserITF {
     Coupon[] public coupons;
     
     uint review_count = 0;
-    
+
+    // authenticator components
+    GetStatus receiptAuthenticator;
+    // mapping(bytes32=>bool) validIds;
+    event LogConstructorInitiated(string nextStep);
+    event LogPriceUpdated(string price);
+    event LogNewProvableQuery(string description);
+
     /**
     * Modifiers
     **/
@@ -70,6 +84,12 @@ contract UserITF {
     /**
     * Functions
     **/
+    // Constructor
+    function GetStatus() payable public {
+        LogConstructorInitiated("Constructor was initiated. Call 'updatePrice()' to send the Provable Query.");
+        receiptAuthenticator = GetStatus(_m);
+    }
+
     // Account Management funcions
     function register(string memory username) public accountNotExists notEmpty(username) returns (bool) {
         User memory u;
@@ -85,17 +105,17 @@ contract UserITF {
     
     // return true if review successfully recorded
     // else return false
-    function newReview(string memory receiptNo, string memory rest_name, string memory review) 
-        public accountExists notEmpty(receiptNo) notEmpty(review) notEmpty(rest_name) returns (int credit) {
+    function newReview(string memory receiptNo, string memory restName, string memory review) 
+        public accountExists notEmpty(receiptNo) notEmpty(review) notEmpty(restName) returns (int credit) {
         address author = msg.sender;
 
         // check receipt validity
-        if (authenticate(receiptNo, rest_name)) {
+        if (authenticate(receiptNo, restName)) {
             Review memory r;
             r.id = review_count;
             review_count ++;
             r.author = author;
-            r.restaurant = rest_name;
+            r.restaurant = restName;
             r.content = review;
             r.credits = calculateForNewReview(author); // initial credit based on the author's credits
             r.receipt = receiptNo;
@@ -112,19 +132,19 @@ contract UserITF {
     }
     
     // return reviews with credit sorting
-    function searchReview(string memory rest_name) public returns (Review[] memory reviews){
-        Review[] memory reviews = backendSearchReview(rest_name);
+    function searchReview(string memory restName) public returns (Review[] memory reviews){
+        Review[] memory reviews = backendSearchReview(restName);
         return reviews;
     }
 
     function newComment(uint reviewNo, string memory comment, string memory receiptNo, bool positive) 
         public accountExists notEmpty(receiptNo) notEmpty(comment) returns (int){
-        string memory rest_name = reviews[reviewNo].restaurant;
-        if (authenticate(receiptNo, rest_name)) {
+        string memory restName = reviews[reviewNo].restaurant;
+        if (authenticate(receiptNo, restName)) {
             Comment memory c;
             c.review = reviewNo;
             c.author = msg.sender;
-            c.comment = comment;
+            c.comment = comment;    
             c.positive = positive;
             c.receipt = receiptNo;
             
@@ -149,9 +169,9 @@ contract UserITF {
         return (users[msg.sender].unusedCredits, check_available_coupons(msg.sender));
     }
 
-    function exchangeCoupon(string memory rest_name, uint value, int num) public accountExists returns (string memory){
+    function exchangeCoupon(string memory restName, uint value, int num) public accountExists returns (string memory){
         // check account and database availabilitys
-        int result = backendExchangeCoupon(rest_name, value, num, users[msg.sender].unusedCredits);
+        int result = backendExchangeCoupon(restName, value, num, users[msg.sender].unusedCredits);
         if (result >= 0){
             // mark credits to be used
             users[msg.sender].unusedCredits -= result;
@@ -164,8 +184,8 @@ contract UserITF {
     }
 
     // Authenticator functions (connected with Oracle)
-    function authenticate(string memory receiptNo, string memory rest_name) private returns (bool){
-        return true;
+    function authenticate(string memory receiptNo, string memory restName) private returns (bool){
+        OracleAuthenticator.getStatus(restName, receiptNo);
     }
     
     /**
@@ -182,11 +202,11 @@ contract UserITF {
     }
     
     // if succeed, return the number of credit exchanged 
-    function backendExchangeCoupon(string memory rest_name, uint value, int num, int credits) private returns (int){
+    function backendExchangeCoupon(string memory restName, uint value, int num, int credits) private returns (int){
         return 0;
     }
     
-    function backendSearchReview(string memory rest_name) private returns (Review[] memory reviews){
+    function backendSearchReview(string memory restName) private returns (Review[] memory reviews){
         return reviews;
     }
     
