@@ -1,7 +1,8 @@
 pragma solidity ^0.4.22;
 pragma experimental ABIEncoderV2;
 
-import "OracleAuthenticator.sol"
+import "github.com/provable-things/ethereum-api/provableAPI_0.4.25.sol";
+import "github.com/Arachnid/solidity-stringutils/strings.sol";
 
 // This file contains the interface class which contains management functions for normal users
 contract UserITF is usingProvable{
@@ -15,7 +16,6 @@ contract UserITF is usingProvable{
     }
     
     struct Review {
-        uint id;
         address author;
         string restaurant;
         string content;
@@ -24,10 +24,11 @@ contract UserITF is usingProvable{
     }
     
     struct Comment {
-        uint review;
+        bytes32 review;
         address author;
         bool positive;
         string comment;
+        string restaurant;
         string receipt;
     }
     
@@ -49,20 +50,28 @@ contract UserITF is usingProvable{
     // userITF components
     mapping (address => User) public users;
 
-    Review[] public reviews;
-    Comment[] public comments;
-    CouponType[] public couponTypes;
-    Coupon[] public coupons;
-    
-    uint review_count = 0;
+    mapping(bytes32=>Review) public reviews;
+    mapping(bytes32=>Comment) public comments;
+    // CouponType[] public couponTypes;
+    // Coupon[] public coupons;
 
-    // authenticator components
-    GetStatus receiptAuthenticator;
-    // mapping(bytes32=>bool) validIds;
+    // API address
+    string link = "json(https://guarded-sands-73970.herokuapp.com/records/";
+    // saves the processing order id from the backend
+    mapping(bytes32=>string) validIds;
+    mapping(string=>bool) usedReceipts;
+    // backend request variables
+    uint256 public requestPrice;
+    uint256 public AvaBalance;
     event LogConstructorInitiated(string nextStep);
     event LogPriceUpdated(string price);
     event LogNewProvableQuery(string description);
-
+    
+    // debug-use
+    string public currentReview;
+    string public currentComment;
+    bytes32 public currentReviewId;
+    
     /**
     * Modifiers
     **/
@@ -80,18 +89,22 @@ contract UserITF is usingProvable{
         require(bytes(content).length != 0);
         _;
     }
-    
+
     /**
     * Functions
     **/
-    // Constructor
-    function GetStatus() payable public {
+    // constructor
+    function UserITF() payable public {
         LogConstructorInitiated("Constructor was initiated. Call 'updatePrice()' to send the Provable Query.");
-        receiptAuthenticator = GetStatus(_m);
     }
+
+    function () payable {}
 
     // Account Management funcions
     function register(string memory username) public accountNotExists notEmpty(username) returns (bool) {
+        if(users[msg.sender]){
+           return false; 
+        }
         User memory u;
         u.name = username;
         u.unusedCredits = 0;
@@ -100,118 +113,142 @@ contract UserITF is usingProvable{
         users[msg.sender] = u;
         return true;
     }
-    
+
     // Review Management functions
-    
     // return true if review successfully recorded
     // else return false
-    function newReview(string memory receiptNo, string memory restName, string memory review) 
-        public accountExists notEmpty(receiptNo) notEmpty(review) notEmpty(restName) returns (int credit) {
+    // Review Management functions
+    // return true if review successfully recorded
+    // else return false
+    function newReview(string memory receiptNo, string memory restName, string memory review) payable
+        public accountExists notEmpty(receiptNo) notEmpty(review) notEmpty(restName) {
+        
         address author = msg.sender;
 
-        // check receipt validity
-        if (authenticate(receiptNo, restName)) {
-            Review memory r;
-            r.id = review_count;
-            review_count ++;
-            r.author = author;
-            r.restaurant = restName;
-            r.content = review;
-            r.credits = calculateForNewReview(author); // initial credit based on the author's credits
-            r.receipt = receiptNo;
-
-            reviews.push(r);
-            
-            users[author].unusedCredits += r.credits; // change user credit
-            
-            return r.credits;
-        }
-        else{
-            return -1;
+        Review memory r;
+        r.author = author;
+        r.restaurant = restName;
+        r.content = review;
+        r.receipt = receiptNo;
+        r.credits = 0;
+        
+        // add review validity checking order to the backend
+        bytes32 id = this.receiptAuthenticate.value(msg.value)(receiptNo, restName, 'newReview');
+        
+        if (id != bytes32('none')) {
+            reviews[id] = r;
         }
     }
-    
-    // return reviews with credit sorting
-    function searchReview(string memory restName) public returns (Review[] memory reviews){
-        Review[] memory reviews = backendSearchReview(restName);
-        return reviews;
-    }
 
-    function newComment(uint reviewNo, string memory comment, string memory receiptNo, bool positive) 
+    function newComment(bytes32 reviewId, string memory comment, string memory receiptNo, bool positive) payable
         public accountExists notEmpty(receiptNo) notEmpty(comment) returns (int){
-        string memory restName = reviews[reviewNo].restaurant;
-        if (authenticate(receiptNo, restName)) {
-            Comment memory c;
-            c.review = reviewNo;
-            c.author = msg.sender;
-            c.comment = comment;    
-            c.positive = positive;
-            c.receipt = receiptNo;
-            
-            comments.push(c);
-            
-            // get new writer and commentor credits
-            (int authorCredit, int commentorCredit) = calculateForNewComment(positive, msg.sender, reviews[reviewNo].author);
-            
-            // update to the database
-            users[reviews[reviewNo].author].unusedCredits += authorCredit;
-            users[msg.sender].unusedCredits += commentorCredit;
-            
-            return commentorCredit;
+
+        string memory restName = reviews[reviewId].restaurant;
+        
+        Comment memory c;
+        c.review = reviewId;
+        c.author = msg.sender;
+        c.comment = comment;    
+        c.positive = positive;
+        c.receipt = receiptNo;
+        c.restaurant = restName;
+        
+        bytes32 id = this.receiptAuthenticate.value(msg.value)(receiptNo, restName, 'newComment');
+        
+        if (id != bytes32('none')) {
+            comments[id] = c;
+        }
+        
+        // get new writer and commentor credits
+        // (int authorCredit, int commentorCredit) = calculateForNewComment(positive, msg.sender, reviews[reviewNo].author);
+        
+        // // update to the database
+        // users[reviews[reviewNo].author].unusedCredits += authorCredit;
+        // users[msg.sender].unusedCredits += commentorCredit;
+    }
+
+    // Authentication Function
+    function receiptAuthenticate(string memory receiptNo, string memory restName, string usage) payable returns (bytes32 order_id){
+        require(msg.value >= 0.000175 ether);
+        string memory s3 = append(link,restName,"/",receiptNo,  ").result");
+        if (provable_getPrice("URL") > this.balance) {
+           requestPrice = provable_getPrice("URL");
+           AvaBalance = address(this).balance;
+           LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee");
+           return bytes32("none");
+        } 
+        else {
+           requestPrice = provable_getPrice("URL");
+           AvaBalance = address(this).balance;
+           LogNewProvableQuery("Provable query was sent, standing by for the answer..");
+           bytes32 queryId = provable_query(60,"URL", s3,175000);
+           validIds[queryId] = usage;
+           return queryId;
+       }
+    }
+    
+    // Callback function
+    // Handles with all callback actions from the off-chain results
+    function __callback(bytes32 myid, string result) {
+        if (msg.sender != provable_cbAddress()) revert();
+        string memory receipt_addr;
+        // interactions
+        if (compareStrings(validIds[myid], 'newReview')){
+            // write the review buffer into the database
+            if (!compareStrings(result, 'false')){
+                // record receipt usage
+                receipt_addr = append2(reviews[myid].restaurant, reviews[myid].receipt);
+                if (!usedReceipts[receipt_addr]){
+                    usedReceipts[receipt_addr] = true;
+                    currentReview = reviews[myid].content;
+                    currentReviewId = myid;
+                }
+                else{
+                    currentReview = '';
+                    currentReviewId = bytes32(0);
+                    delete reviews[myid];
+                }
+            }
+            else{
+                currentReview = '';
+                delete reviews[myid];
+            }
+        }
+        else if (compareStrings(validIds[myid], 'newComment')){
+            if (!compareStrings(result, 'false')){
+                // record receipt usage
+                receipt_addr = append2(comments[myid].restaurant, comments[myid].receipt);
+                if (!usedReceipts[receipt_addr]){
+                    usedReceipts[receipt_addr] = true;
+                    currentComment = comments[myid].comment;
+                }
+                else{
+                    currentComment = '';
+                    delete comments[myid];
+                }
+            }
+            else{
+                currentComment = '';
+                delete comments[myid];
+            }
         }
         else{
-            return 0;
+            
         }
-    }
-
-    // Credit Management functions
-    function checkCredit() public accountExists returns (int unusedCredits, CouponType[] memory available_coupons) {
-        return (users[msg.sender].unusedCredits, check_available_coupons(msg.sender));
-    }
-
-    function exchangeCoupon(string memory restName, uint value, int num) public accountExists returns (string memory){
-        // check account and database availabilitys
-        int result = backendExchangeCoupon(restName, value, num, users[msg.sender].unusedCredits);
-        if (result >= 0){
-            // mark credits to be used
-            users[msg.sender].unusedCredits -= result;
-            users[msg.sender].usedCredits += result;
-            return 'XXXXXXXX';
-        }
-        else{
-            return '';
-        }
-    }
-
-    // Authenticator functions (connected with Oracle)
-    function authenticate(string memory receiptNo, string memory restName) private returns (bool){
-        OracleAuthenticator.getStatus(restName, receiptNo);
+        
+        LogPriceUpdated(result);
+        delete validIds[myid];
     }
     
-    /**
-    * Functions (off-chain simulator)
-    **/
-    
-    function calculateForNewReview(address author) private returns (int credit){
-        int author_credit = users[author].unusedCredits + users[author].usedCredits;
-        return author_credit / 10;
+    function compareStrings (string memory a, string memory b) public returns (bool) {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
     }
     
-    function calculateForNewComment(bool positive, address author, address commentor) private returns (int creditForAuthor, int creditForCommentor){
-        return (5, 5);
+    function append(string a, string b, string c, string d, string e) internal pure returns (string) {
+        return string(abi.encodePacked(a, b, c, d, e));
     }
     
-    // if succeed, return the number of credit exchanged 
-    function backendExchangeCoupon(string memory restName, uint value, int num, int credits) private returns (int){
-        return 0;
+    function append2(string a, string b) internal pure returns (string) {
+        return string(abi.encodePacked(a, b));
     }
-    
-    function backendSearchReview(string memory restName) private returns (Review[] memory reviews){
-        return reviews;
-    }
-    
-    function check_available_coupons(address user) private returns (CouponType[] memory available_coupons){
-        return couponTypes;
-    }
-
-}   
+}

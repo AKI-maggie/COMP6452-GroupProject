@@ -49,11 +49,12 @@ contract GetStatus is usingProvable {
 
    }
    
-   // REQUEST TO GET RECIEPT STATUS , NEED TO PAY AT LEAST 0.000175 ETHER TO CALL. REMEMBER TO SET THE TRANSACTION COST ETHER!!!!!
+   // REQUEST TO GET RECIEPT STATUS , NEED TO PAY AT LEAST 0.000175 ETHER TO CALL. 
+   // REMEMBER TO SET THE TRANSACTION COST ETHER!!!!!
    function getStatus(string restaurant, string receipt_N) payable {
         require(msg.value >= 0.000175 ether);
         link = "json(https://guarded-sands-73970.herokuapp.com/records/" ;
-        s3 = append(link,restaurant,"/",receipt_N,  ").results.receipt_num");
+        s3 = append(link,restaurant,"/",receipt_N,  ").result");
         receipt = receipt_N;
        if (provable_getPrice("URL") > this.balance) {
            requestPrice = provable_getPrice("URL");
@@ -63,7 +64,6 @@ contract GetStatus is usingProvable {
            requestPrice = provable_getPrice("URL");
            AvaBalance = address(this).balance;
            LogNewProvableQuery("Provable query was sent, standing by for the answer..");
-           //provable_query("URL", "json(https://api.pro.coinbase.com/products/ETH-USD/ticker).time");
            bytes32 queryId = provable_query(60,"URL", s3,175000);
            validIds[queryId] = true;
        }
