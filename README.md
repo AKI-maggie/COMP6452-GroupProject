@@ -22,3 +22,6 @@ Build of REST API: </br>
 https://www.youtube.com/playlist?list=PL55RiY5tL51q4D-B63KBnygU6opNPFk_q </br>
 To publish api: </br>
 https://dzone.com/articles/create-and-publish-your-rest-api-using-spring-boot
+
+# Oracle usage
+ALWAYS NOTICE to give 0.0045 eth for a transaction
