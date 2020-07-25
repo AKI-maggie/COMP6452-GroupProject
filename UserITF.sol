@@ -102,9 +102,6 @@ contract UserITF is usingProvable{
 
     // Account Management funcions
     function register(string memory username) public accountNotExists notEmpty(username) returns (bool) {
-        if(users[msg.sender]){
-           return false; 
-        }
         User memory u;
         u.name = username;
         u.unusedCredits = 0;
