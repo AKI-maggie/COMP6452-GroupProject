@@ -19,6 +19,7 @@ need to provide both restaurant name and its receipt num, receive the json objec
 For store comments and reviews (post method only): </br>
 https://guarded-sands-73970.herokuapp.com/records/Review </br>
 post review to ipfs provide : </br>
+```js
   const review = {
             author : req.body.author,
             restaurant : req.body.restaurant,
@@ -26,6 +27,7 @@ post review to ipfs provide : </br>
             credits : req.body.credits,
             receipt : req.body.receipt
   }
+ ```
 </br>
 </br>
 hash file link : https://guarded-sands-73970.herokuapp.com/records/ipfs  </br>
