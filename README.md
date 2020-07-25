@@ -10,12 +10,22 @@ npm start </br>
 to run the server
 
 # API publish link
+For review/comments/receipts : </br>
 https://guarded-sands-73970.herokuapp.com/records 
-with normal get/post method </br>
+with normal get method to get all receipts detail</br>
 https://guarded-sands-73970.herokuapp.com/records/#restaurantName/#receipt_num </br>
-need to provide both restaurant name and its receipt num, receive the json object containing all information
+need to provide both restaurant name and its receipt num, receive the json object containing all information of that receipt
 </br>
-post receipt number to the request body to change the status of receipt into used 
+For store comments and reviews (post method only): </br>
+https://guarded-sands-73970.herokuapp.com/records/Review </br>
+post review to ipfs provide : </br>
+  const review = {
+            author : req.body.author,
+            restaurant : req.body.restaurant,
+            content : req.body.content,
+            credits : req.body.credits,
+            receipt : req.body.receipt
+  }
 </br>
 </br>
 hash file link : https://guarded-sands-73970.herokuapp.com/records/ipfs  </br>
