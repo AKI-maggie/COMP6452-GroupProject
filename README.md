@@ -10,19 +10,63 @@ npm start </br>
 to run the server
 
 # API publish link
+For review/comments/receipts : </br>
 https://guarded-sands-73970.herokuapp.com/records 
-with normal get/post method </br>
+with normal get method to get all receipts detail</br>
 https://guarded-sands-73970.herokuapp.com/records/#restaurantName/#receipt_num </br>
-need to provide both restaurant name and its receipt num, receive the json object containing all information
+need to provide both restaurant name and its receipt num, receive the json object containing all information of that receipt
 </br>
-post receipt number to the request body to change the status of receipt into used 
+For store comments and reviews (post method only): </br>
+https://guarded-sands-73970.herokuapp.com/records/Review </br>
+post review to ipfs provide : </br>
+```js
+  const review = {
+            author : req.body.author,
+            restaurant : req.body.restaurant,
+            content : req.body.content,
+            credits : req.body.credits,
+            receipt : req.body.receipt
+  }
+ ```
+ return message is the ipfs hash you can use this hash to check out the database detail is in below hash part
 </br>
+https://guarded-sands-73970.herokuapp.com/records/Comment
+post comment to ipfs provide :</br>
+```js
+ const comment = { 
+            review : req.body.review,
+            author : req.body.author,
+            positive : req.body.positive,
+            comment : req.body.comment,
+            restaurant : req.body.restaurant,
+            receipt : req.body.receipt
+        }
+```
+return message is the ipfs hash you can use this hash to check out the database detail is in below hash part
 </br>
-hash file link : https://guarded-sands-73970.herokuapp.com/records/ipfs  </br>
+To access ipfs database: </br>
+Hash file link : https://guarded-sands-73970.herokuapp.com/records/ipfs  </br>
 when you want to access the ipfs database link is : https://ipfs.infura.io/ipfs/ + {hash from above address}
 </br>
+</br>
+For restaurant register, get coupon and use coupon : </br>
+https://guarded-sands-73970.herokuapp.com/coupons </br>
+with all coupons detail </br>
+https://guarded-sands-73970.herokuapp.com/coupons/#senderAddress </br>
+GET method to receive a $5 coupon from system return message is the coupon id </br>
+https://guarded-sands-73970.herokuapp.com/coupons/used/#senderAddress </br>
+GET method to used a coupon by providing the sender add, if the current sender has unused coupon return message success otherwise return message current user do not have any coupon </br>
+https://guarded-sands-73970.herokuapp.com/coupons/register </br>
+POST method to register restaurant need to provide restaurant name and sender address. Each address can only register for 1 restaurant: </br>
+```js  
+    const restaurant = {
+        name: req.body.name,
+        address: req.body.add
+    }
+```
+return message success if registeration is success else is because that address is already register </br>
 
-# Reference Tutorials 
+# Reference Tutorials
 Build of REST API: </br>
 https://www.youtube.com/playlist?list=PL55RiY5tL51q4D-B63KBnygU6opNPFk_q </br>
 To publish api: </br>
