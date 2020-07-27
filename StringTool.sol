@@ -26,7 +26,7 @@ contract StringTools {
         return address(data);
     }
     
-    function uint2str(int i) public pure returns (string){
+    function int2str(int i) public pure returns (string){
         if (i == 0) return "0";
         int j = i;
         uint length;
@@ -53,5 +53,9 @@ contract StringTools {
     
     function append2(string a, string b) public pure returns (string) {
         return string(abi.encodePacked(a, b));
+    }
+    
+    function append22(string a, string b) public pure returns(bytes){
+        return abi.encodePacked(a, b);
     }
 }
