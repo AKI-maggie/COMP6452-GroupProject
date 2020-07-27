@@ -21,8 +21,12 @@ contract Backend {
     //     _;
     // }
     
-    modifier verifiedReceipt(string receiptNo, string restName, address sender){
-        require(usedReceipts[st.append2(restName, receiptNo)] == sender);
+    modifier verifiedReceipt(string option, string receiptNo, string restName, address sender){
+        if (st.compareStrings(option, 'reviewUpdate')){
+        }
+        else{
+            require(usedReceipts[st.append2(restName, receiptNo)] == sender);
+        }
         _;
     }
 
@@ -32,6 +36,7 @@ contract Backend {
         address arg2;
         string arg3;
         int arg4;
+        string arg5;
     }
     
     struct Review {
@@ -61,6 +66,8 @@ contract Backend {
     
     string public debug;
     Review public debug2;
+    Usage public debug3;
+    bytes public debug4;
 
     // Receipt Authentication
     function Backend(address _m){
@@ -78,15 +85,15 @@ contract Backend {
         // else {
         //   LogNewProvableQuery("Provable query was sent, standing by for the answer..");
           bytes32 queryId = fake_provable_query(60,"URL", s3,500000);
-          validIds[queryId] = Usage('receipt', restName, sender, '', 0);
+          validIds[queryId] = Usage('receipt', restName, sender, '', 0, '');
           fake_callback(queryId, receiptNo);
     }
     
     // IPFS upload function
     // hash file link : https://guarded-sands-73970.herokuapp.com/records/ipfs 
     // when you want to access the ipfs database link is : https://ipfs.infura.io/ipfs/ + {hash from above address}
-    function uploadipfs(string option, string data, address user, string restName, string receiptNo, int credit)
-    public verifiedReceipt(receiptNo, restName, user) {
+    function uploadipfs(string option, string data, address user, string restName, string receiptNo, int credit, string backup)
+    public verifiedReceipt(option, receiptNo, restName, user) {
         bytes32 queryId;
         // if (provable_getPrice("URL") > this.balance) {
         //   LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee");
@@ -95,17 +102,18 @@ contract Backend {
         //   LogNewProvableQuery("Provable query was sent, standing by for the answer..");
       if(st.compareStrings(option,"comment")){
           queryId = fake_provable_query(60, "URL",data, 5000);
-          validIds[queryId] = Usage('comment', restName, user, receiptNo, credit);
+          validIds[queryId] = Usage('comment', restName, user, receiptNo, credit, '');
           fake_callback(queryId, data);
       }
-      else if (st.compareStrings(option, "update")){
-        //   queryId = provable_query("URL","json(https://guarded-sands-73970.herokuapp.com/records/Comment).success.deposit",data);
-        //   validIds[queryId] = Usage('comment', restName, user, receiptNo, credit);
+      else if (st.compareStrings(option,"reviewUpdate")){
+          queryId = fake_provable_query(60, "URL",data, 5000);
+          validIds[queryId] = Usage('reviewUpdate', restName, user, receiptNo, credit, backup);
+          fake_callback(queryId, data);
       }
       else{  // review
           queryId = fake_provable_query(60, "URL",data, 5000);
           debug = data;
-          validIds[queryId] = Usage('review', restName, user, receiptNo, credit);
+          validIds[queryId] = Usage('review', restName, user, receiptNo, credit, '');
           fake_callback(queryId, data);
       }
     }
@@ -131,6 +139,7 @@ contract Backend {
             r.restaurant = validIds[myid].arg1;
             r.receipt = validIds[myid].arg3;
             r.credits = validIds[myid].arg4;
+            // Review memory r = Review(result, validIds[myid].arg2, validIds[myid].arg1, validIds[myid].arg3, validIds[myid].arg4, new string[](0));
             reviews[st.append22(validIds[myid].arg1, validIds[myid].arg3)] = r;
             
             rest[validIds[myid].arg1].reviews.push(r);
@@ -141,9 +150,18 @@ contract Backend {
         }
         else if (st.compareStrings(validIds[myid].use, 'comment')){
             usedReceipts[st.append2(validIds[myid].arg1, validIds[myid].arg3)] = address(-1);  // the receipt no longer usable
+            debug = result;
+            reviews[st.append22(validIds[myid].arg1, validIds[myid].arg5)].comments.push(result);
+            debug = reviews[st.append22(validIds[myid].arg1, validIds[myid].arg5)].comments[0];
+        }
+        
+        else if (st.compareStrings(validIds[myid].use, 'reviewUpdate')){
+            reviews[st.append22(validIds[myid].arg1, validIds[myid].arg5)].credits += validIds[myid].arg4;
+            debug2 = reviews[st.append22(validIds[myid].arg1, validIds[myid].arg5)];
         }
         else{
         }
         debug = result;
+        // delete validIds[myid];
     }
 }

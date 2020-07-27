@@ -8,7 +8,7 @@ import "./Backend.sol";
 
 // This file contains the interface class which contains management functions for normal users
 contract UserITF{
-    /**
+    /**0x568E565bAEAb83e47F55A524523FD64e23f7C88F
     * Structures
     **/
     struct User {
@@ -77,6 +77,11 @@ contract UserITF{
         _;
     }
     
+    modifier notAuthor(address author){
+        require(msg.sender!=author);
+        _;
+    }
+    
      /**
     * Functions
     **/
@@ -87,12 +92,12 @@ contract UserITF{
     }
  
     // Account Management funcions
-    function receiptAuthenticate(string memory receiptNo, string memory restName) public
+    function receiptAuthenticate(string memory receiptNo, string memory restName) accountExists public
     notEmpty(receiptNo) notEmpty(restName) {
         bck.receiptAuthenticate(receiptNo, restName, msg.sender);
     }
 
-    function register(string memory username) public returns (address) {
+    function register(string memory username) public accountNotExists returns (address) {
         User memory u;
         u.name = username;
         u.unusedCredits = 30; // initial credits
@@ -106,7 +111,7 @@ contract UserITF{
 
     // Review Management functions
     function newReview(string memory receiptNo, string memory restName, string memory review)
-        public notEmpty(receiptNo) notEmpty(restName) notEmpty(review){
+        public accountExists notEmpty(receiptNo) notEmpty(restName) notEmpty(review){
         // calculate credit
         int reviewCredit = (users[msg.sender].unusedCredits + users[msg.sender].usedCredits)/10;
         // add review validity checking order to the backend
@@ -117,16 +122,16 @@ contract UserITF{
                                                     '",\n"receipt": "', receiptNo,
                                                     '"\n} '));
         users[msg.sender].unusedCredits += reviewCredit;  // include into user's credit
-        bck.uploadipfs('review', data, msg.sender, restName, receiptNo, reviewCredit);
+        bck.uploadipfs('review', data, msg.sender, restName, receiptNo, reviewCredit, '');
     }
     
-    function exchangePrizes() enoughCredit public{
+    function exchangePrizes() enoughCredit accountExists public{
         bytes32 queryId = fake_provable_query(60,"URL", st.append2("https://guarded-sands-73970.herokuapp.com/coupons/", st.toString(msg.sender)),500000);
         validIds[queryId] = Usage('prize', '', msg.sender, '', thres);
         fake_callback(queryId, st.int2str(count));
     }
     
-    function useCoupon() public returns (string) {
+    function useCoupon() public accountExists returns (string) {
         require (users[msg.sender].index < users[msg.sender].length);
         uint i = users[msg.sender].index;
         users[msg.sender].index += 1;
@@ -134,12 +139,12 @@ contract UserITF{
     }
     
     function newComment(string memory receiptNo, address author, string memory receiptNo2, string memory restName, string memory comment, bool positive) public 
-     notEmpty(receiptNo) notEmpty(restName) notEmpty(comment){
-        this.commentDataUpload1(receiptNo, msg.sender, restName, comment, positive); //commentor
-        // this.commentDataUpload2.value(msg.value/2)(receiptNo2, author, restName, msg.sender, positive); //author
+     accountExists notAuthor(author) notEmpty(receiptNo) notEmpty(restName) notEmpty(comment){
+        this.commentDataUpload1(receiptNo, receiptNo2, msg.sender, restName, comment, positive); //commentor
+        this.commentDataUpload2(receiptNo,receiptNo2, author, restName, msg.sender, positive); //author
     }
     
-    function commentDataUpload1(string memory receiptNo, address sender, string memory restName, string memory comment, bool positive) payable public{
+    function commentDataUpload1(string memory receiptNo, string memory receiptNo2, address sender, string memory restName, string memory comment, bool positive) public{
         string memory data = string(abi.encodePacked('{\n "review": "', receiptNo, 
                                                     '",\n"author": "', st.toString(sender),
                                                     '",\n"positive": "', st.trueOrFalse(positive), 
@@ -147,22 +152,25 @@ contract UserITF{
                                                     '",\n"restaurant": "', restName,
                                                     '"\n} '));
         users[sender].unusedCredits += (users[sender].unusedCredits + users[sender].usedCredits) / 30;  
-        bck.uploadipfs('comment', data, sender, restName, receiptNo, (users[sender].unusedCredits + users[sender].usedCredits) / 30);
+        bck.uploadipfs('comment', data, sender, restName, receiptNo, (users[sender].unusedCredits + users[sender].usedCredits) / 30, receiptNo2);
     }
     
-    // function commentDataUpload2(string memory receiptNo, address author, string memory restName, address sender, bool positive) payable public { 
-    //     if (positive==true){
-    //         users[author].unusedCredits += (users[sender].unusedCredits + users[sender].usedCredits) / 15;
-    //     }
-    //     else{
-    //         users[author].unusedCredits -= (users[sender].unusedCredits + users[sender].usedCredits) / 15;
-    //     }
-    //     string memory data = string(abi.encodePacked('{\n "receipt":"', receiptNo,
-    //                                                   '",\n"rest": "', restName,
-    //                                                  '",\n"credit": "', origCredit
-    //                                                   ));
-    //     bck.uploadipfs('reviewUpdate', data, author, restName, receiptNo, origCredit);
-    // }
+    function commentDataUpload2(string memory receiptNo, string memory receiptNo2, address author, string memory restName, address sender, bool positive) public { 
+        int newCredit;
+        if (positive==true){
+            newCredit += (users[sender].unusedCredits + users[sender].usedCredits) / 15;
+        }
+        else{
+            newCredit -= (users[sender].unusedCredits + users[sender].usedCredits) / 15;
+        }
+        
+        users[author].unusedCredits += newCredit;
+        string memory data = string(abi.encodePacked('{\n "receipt":"', receiptNo,
+                                                      '",\n"rest": "', restName,
+                                                     '",\n"credit": "', newCredit
+                                                      ));
+        bck.uploadipfs('reviewUpdate', data, sender, restName, receiptNo, newCredit, receiptNo2);
+    }
     
     // Callback function
     // Handles with all callback actions from the off-chain results
