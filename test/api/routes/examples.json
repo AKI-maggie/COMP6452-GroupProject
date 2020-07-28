@@ -1,30 +1,64 @@
 {
-    "result":[
+    "result": [
         {
-            "name":"KFC",
-            "receipt_num":"12345667",
-            "order_num":"1004",
-            "time":"2020-07-07T09:10:47",
-            "status":"false"
+        "name": "KFC",
+        "receipt_num": "12345667",
+        "order_num": "1004",
+        "time": "2020-07-07T09:10:47"
         },
         {
-            "name":"McDonalds",
-            "receipt_num":"",
-            "order_num":"1647",
-            "time":"2020-07-05T21:10:47",
-            "status":"false"
-        },{
-            "name":"GoodLuckRestaurant",
-            "receipt_num":"986746223",
-            "order_num":"",
-            "time":"2020-07-05T21:10:47",
-            "status":"false"
-        },{
-            "name":"KFC",
-            "receipt_num":"9876543",
-            "order_num":"2008",
-            "time":"2020-03-07T19:10:47",
-            "status":"true"
+        "name": "KFC",
+        "receipt_num": "3645261",
+        "order_num": "966",
+        "time": "2020-07-14T22:10:47"
+        },
+        {
+        "name": "Subway",
+        "receipt_num": "12345667",
+        "order_num": "503",
+        "time": "2020-07-12T09:10:47"
+        },
+        {
+        "name": "OliverBrown",
+        "receipt_num": "998664",
+        "order_num": "12",
+        "time": "2020-07-02T19:10:47"
+        },
+        {
+        "name": "OliverBrown",
+        "receipt_num": "5564729",
+        "order_num": "1004",
+        "time": "2020-07-07T09:10:47"
+        },
+        {
+        "name": "CoffeeOnCampus",
+        "receipt_num": "125432",
+        "order_num": "3",
+        "time": "2020-07-13T19:10:47"
+        },
+        {
+        "name": "McDonalds",
+        "receipt_num": "5737286",
+        "order_num": "1647",
+        "time": "2020-07-05T21:10:47"
+        },
+        {
+        "name": "GoodLuckRestaurant",
+        "receipt_num": "986746223",
+        "order_num": "",
+        "time": "2020-07-05T21:10:47"
+        },
+        {
+            "name": "Subway",
+            "receipt_num": "342632",
+            "order_num": "",
+            "time": "2020-07-15T21:10:47"
+            },
+        {
+        "name": "KFC",
+        "receipt_num": "9876543",
+        "order_num": "2008",
+        "time": "2020-03-07T19:10:47"
         }
     ]
 }

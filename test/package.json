@@ -10,15 +10,19 @@
     "node",
     "restful",
     "api",
-    "heroku"
+    "heroku",
+    "ipfs-http-client"
   ],
   "author": "Jenna",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
+    "ipfs-api": "^26.1.2",
+    "ipfs-http-client": "^45.0.0",
     "mongoose": "^5.9.22",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "web3": "^1.0.0-beta.37"
   },
   "engines": {
     "node": "10.x"
