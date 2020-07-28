@@ -125,19 +125,6 @@ contract UserITF{
         bck.uploadipfs('review', data, msg.sender, restName, receiptNo, reviewCredit, '');
     }
     
-    function exchangePrizes() enoughCredit accountExists public{
-        bytes32 queryId = fake_provable_query(60,"URL", st.append2("https://guarded-sands-73970.herokuapp.com/coupons/", st.toString(msg.sender)),500000);
-        validIds[queryId] = Usage('prize', '', msg.sender, '', thres);
-        fake_callback(queryId, st.int2str(count));
-    }
-    
-    function useCoupon() public accountExists returns (string) {
-        require (users[msg.sender].index < users[msg.sender].length);
-        uint i = users[msg.sender].index;
-        users[msg.sender].index += 1;
-        return users[msg.sender].holdCoupons[i];
-    }
-    
     function newComment(string memory receiptNo, address author, string memory receiptNo2, string memory restName, string memory comment, bool positive) public 
      accountExists notAuthor(author) notEmpty(receiptNo) notEmpty(restName) notEmpty(comment){
         this.commentDataUpload1(receiptNo, receiptNo2, msg.sender, restName, comment, positive); //commentor
@@ -171,6 +158,20 @@ contract UserITF{
                                                      '",\n"credit": "', newCredit
                                                       ));
         bck.uploadipfs('reviewUpdate', data, sender, restName, receiptNo, newCredit, receiptNo2);
+    }
+    
+    // Credit/Prize Management Functions
+    function exchangePrizes() enoughCredit accountExists public{
+        bytes32 queryId = fake_provable_query(60,"URL", st.append2("https://guarded-sands-73970.herokuapp.com/coupons/", st.toString(msg.sender)),500000);
+        validIds[queryId] = Usage('prize', '', msg.sender, '', thres);
+        fake_callback(queryId, st.int2str(count));
+    }
+    
+    function useCoupon() public accountExists returns (string) {
+        require (users[msg.sender].index < users[msg.sender].length);
+        uint i = users[msg.sender].index;
+        users[msg.sender].index += 1;
+        return users[msg.sender].holdCoupons[i];
     }
     
     // Callback function

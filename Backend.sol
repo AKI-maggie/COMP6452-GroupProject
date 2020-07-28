@@ -3,7 +3,6 @@ pragma solidity ^0.4.24;
 import "github.com/Arachnid/solidity-stringutils/strings.sol";
 import "./StringTools.sol";
 
-// This file contains the interface class which contains management functions for normal users
 contract Backend {
     uint count;
     
@@ -14,12 +13,6 @@ contract Backend {
         require(bytes(content).length != 0);
         _;
     }
-    // modifier enoughPrice(){
-    //     requestPrice = provable_getPrice("URL");
-    //     AvaBalance = address(this).balance;
-    //     require(msg.value >= requestPrice);
-    //     _;
-    // }
     
     modifier verifiedReceipt(string option, string receiptNo, string restName, address sender){
         if (st.compareStrings(option, 'reviewUpdate')){
