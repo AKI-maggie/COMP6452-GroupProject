@@ -4,23 +4,94 @@ var contract = require('truffle-contract')
 var Web3 = require('web3');
 var web3 = new Web3(new Web3.providers.WebsocketProvider('http://127.0.0.1:8545'));
 
-const account = "0xDB224A74Fc9d9e399d4414C18c33171941792BF1"
+const account = "0xE9E246825751346E6A910B8171c1A1ABA4f45B4D"
 
-let address = "0x392d22f6Dfc9bBb93576aF9Ce62fEea8d15dc576"
-var abi =[
+let address = "0x9C9075CFd202f889451d625AFE6A9B42B71F4590"
+var abi = [
 	{
-		"constant": true,
-		"inputs": [],
-		"name": "record",
-		"outputs": [
+		"constant": false,
+		"inputs": [
 			{
-				"name": "",
+				"name": "myid",
+				"type": "bytes32"
+			},
+			{
+				"name": "result",
+				"type": "string"
+			}
+		],
+		"name": "fake_callback",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "time",
+				"type": "uint256"
+			},
+			{
+				"name": "t",
+				"type": "string"
+			},
+			{
+				"name": "addr",
+				"type": "string"
+			},
+			{
+				"name": "amount",
 				"type": "int256"
 			}
 		],
+		"name": "fake_provable_query",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32"
+			}
+		],
 		"payable": false,
-		"stateMutability": "view",
+		"stateMutability": "nonpayable",
 		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "description",
+				"type": "string"
+			}
+		],
+		"name": "LogNewProvableQuery",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "description",
+				"type": "bytes32"
+			}
+		],
+		"name": "LogDebug",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "description",
+				"type": "string"
+			}
+		],
+		"name": "LogDebug2",
+		"type": "event"
 	},
 	{
 		"constant": false,
@@ -43,6 +114,101 @@ var abi =[
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "data",
+				"type": "string"
+			}
+		],
+		"name": "UploadComment",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"name": "_m",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "option",
+				"type": "string"
+			},
+			{
+				"name": "data",
+				"type": "string"
+			},
+			{
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"name": "restName",
+				"type": "string"
+			},
+			{
+				"name": "receiptNo",
+				"type": "string"
+			},
+			{
+				"name": "credit",
+				"type": "int256"
+			},
+			{
+				"name": "backup",
+				"type": "string"
+			}
+		],
+		"name": "uploadipfs",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "data",
+				"type": "string"
+			}
+		],
+		"name": "UploadReview",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "RestName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"name": "Receipt",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"name": "credit",
+				"type": "int256"
+			}
+		],
+		"name": "UpdateReview",
+		"type": "event"
 	},
 	{
 		"constant": true,
@@ -123,62 +289,6 @@ var abi =[
 		"type": "function"
 	},
 	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "myid",
-				"type": "bytes32"
-			},
-			{
-				"name": "result",
-				"type": "string"
-			}
-		],
-		"name": "fake_callback",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "option",
-				"type": "string"
-			},
-			{
-				"name": "data",
-				"type": "string"
-			},
-			{
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"name": "restName",
-				"type": "string"
-			},
-			{
-				"name": "receiptNo",
-				"type": "string"
-			},
-			{
-				"name": "credit",
-				"type": "int256"
-			},
-			{
-				"name": "backup",
-				"type": "string"
-			}
-		],
-		"name": "uploadipfs",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"constant": true,
 		"inputs": [],
 		"name": "debug4",
@@ -193,128 +303,18 @@ var abi =[
 		"type": "function"
 	},
 	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "time",
-				"type": "uint256"
-			},
-			{
-				"name": "t",
-				"type": "string"
-			},
-			{
-				"name": "addr",
-				"type": "string"
-			},
-			{
-				"name": "amount",
-				"type": "int256"
-			}
-		],
-		"name": "fake_provable_query",
+		"constant": true,
+		"inputs": [],
+		"name": "record",
 		"outputs": [
 			{
 				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"name": "_m",
-				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"name": "description",
-				"type": "string"
-			}
-		],
-		"name": "LogNewProvableQuery",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"name": "description",
-				"type": "bytes32"
-			}
-		],
-		"name": "LogDebug",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"name": "description",
-				"type": "string"
-			}
-		],
-		"name": "LogDebug2",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"name": "data",
-				"type": "string"
-			}
-		],
-		"name": "UploadComment",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"name": "data",
-				"type": "string"
-			}
-		],
-		"name": "UploadReview",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"name": "RestName",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"name": "Receipt",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"name": "credit",
 				"type": "int256"
 			}
 		],
-		"name": "UpdateReview",
-		"type": "event"
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
 	}
 ]
 startListener(address)
@@ -340,7 +340,7 @@ function startListener(address) {
 
         console.log('Comment Upload:');
         console.log(event.returnValues.data);
-        // commenthandler(event.returnValues.data);
+        commenthandler(event.returnValues.data);
     });
 
     const UpdateReviewHandler = myContract.events.UpdateReview((error, event) => {

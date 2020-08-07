@@ -22,6 +22,16 @@ contract Backend {
         }
         _;
     }
+    
+    modifier validRestaurant(string restName){
+        require(registeredRestaurant[restName] == true);
+        _;
+    }
+    
+    modifier validReceipt(string restName, string receipt){
+        require(receipts[st.append2(restName, receipt)] == true);
+        _;
+    }
 
     struct Usage {
         string use;
@@ -63,6 +73,10 @@ contract Backend {
     bytes public debug4;
     int public record;
     
+    // Testing restaurant sampls
+    mapping(string=>bool) registeredRestaurant;
+    mapping(string=>bool) receipts;
+    
     event UploadComment(string data);
     event UploadReview(string data);
     event UpdateReview(string RestName, string Receipt, int credit);
@@ -71,10 +85,20 @@ contract Backend {
     function Backend(address _m){
         st = StringTools(_m);
         count = 0;
+        
+        // restaurant and receipt samples
+        registeredRestaurant['KFC'] = true;
+        registeredRestaurant['PizzaHut'] = true;
+        
+        receipts[st.append2('KFC', '12345667')] = true;
+        receipts[st.append2('KFC', '54667889')] = true;
+        receipts[st.append2('KFC', '44444444')] = true;
+        receipts[st.append2('KFC', '76543218')] = true;
+        receipts[st.append2('PizzaHut', '54821234')] = true;
     }
     
     function receiptAuthenticate(string memory receiptNo, string memory restName, address sender) public
-        notEmpty(receiptNo) notEmpty(restName)  {
+        notEmpty(receiptNo) notEmpty(restName) validRestaurant(restName) validReceipt(restName, receiptNo) {
         require(usedReceipts[st.append2(restName, receiptNo)] == address(0));
         string memory s3 = st.append(receiptLink,restName,"/",receiptNo,  ").result");
         // if (requestPrice > this.balance) {

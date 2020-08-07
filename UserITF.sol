@@ -56,7 +56,6 @@ contract UserITF{
     /**
     * Modifiers
     **/
-
     modifier notEmpty(string content){
         require(bytes(content).length != 0);
         _;
