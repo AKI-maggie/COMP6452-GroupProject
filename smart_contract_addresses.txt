@@ -1,5 +1,6 @@
 Smart Contracts addresses:
+We used a local server to run the demo
+Address we used for UserITF.sol during the demo: 0xc90DC26d0F25071596FC4C4dcBF8F574e754F2D9
+Address we used for Backend.sol during the demo: 0xE222259f9b6c1afcC0DB24b1dA07a0A84d992402
+Address we used for StringTools.sol during the demo: 0x5bAEcdC03ab2400a6B19F9e249c352e7De87e26D
 
-Address we used for Backend.sol during the demo: 0x9C9075CFd202f889451d625AFE6A9B42B71F4590
-
-Other address:

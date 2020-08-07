@@ -72,7 +72,7 @@ contract UserITF{
     }
 
     modifier enoughCredit(){
-        require(thres >= users[msg.sender].unusedCredits);
+        require(thres <= users[msg.sender].unusedCredits);
         _;
     }
     

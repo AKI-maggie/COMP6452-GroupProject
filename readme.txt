@@ -12,6 +12,23 @@ Environment for running API
 
 ************************************************************************************************************************************
 
+# How to run the contracts under a local server environment
+1. Setting up your environment and tools
+`npm install -g truffle ethereumjs-testrpc`
+2. Go to the 'oracle' directory in the project
+3. Install necessary things using the following instruction
+`npm install truffle-contract web3 bluebird npm-fetch --save  # Dependencies`
+4. Install server provider Ganeche-cli using the following instruction
+`npm install ganache-cli`
+5. Use a terminal to run the server at local host with the following instruction
+`ganache-cli`
+6. Open Remix. Compile and deploy all the contracts with the order of StringTools.sol, Backend.sol, UserITF.sol. And then copy the contract address of `Backend.sol`.
+7. Open `oracle.js` in the 'oracle' directory. Replace the value of `account` and `address` at the top with the account who deployed the contract and the address of deployed Backend.sol.
+8. Run `node oracle.js` in another terminal.
+9. Carry out contract interactions on the Remix interface.
+
+************************************************************************************************************************************
+
 API publish link (use Heroku cloud platform to publish the API into public network)
 1) For review/comments/receipts :
 
@@ -91,16 +108,6 @@ Ether and function use
   *option can be either 'comment' or 'review'
 
 ************************************************************************************************************************************
-
-How to run a local server (listener of smart contract)
-  1. Setting up your environment and tools npm install -g truffle ethereumjs-testrpc
-  2. Go to the 'oracle' directory in the project
-  3. Install necessary things using the following instruction npm install truffle-contract web3 bluebird npm-fetch --save # Dependencies
-  4. Install server provider Ganeche-cli using the following instruction npm install ganache-cli
-  5. Use a terminal to run the server at local host with the following instruction ganache-cli
-  6. Open Remix. Compile and deploy the contracts and then copy the contract address of Backent.sol.
-  7. Open oracle.js in the 'oracle' directory. Replace the value of account and address at the top.
-  8. Run node oracle.js in another terminal.
 
   Now you can check the output of the js terminal when you try the operations on Remix. Notice that you need to also replace the abi in the  oracle.js everytime you make some changes in the Backend.sol file. And always check if the monitoring account and address are the one  running on Remix.
 
